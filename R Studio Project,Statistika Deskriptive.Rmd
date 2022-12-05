@@ -1,0 +1,363 @@
+---
+title: "Projekti në RStudio, Statistika Deskriptive "
+author: "Nertila Gjini"
+date: '2022-06-17'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=TRUE}
+library(tidyverse) #siguron përmirësimin mbi metodat standarte të importimit të skedarëve gjithashtu përmirëson shpejtesinë e llogaritjes.
+library(ggpubr) #ndihmon në lehtësimin dhe krijimin e grafikëve të bazuar në GGPlot2.
+library(ggplot2) #një paketë në R që shërben për vizualizimin e të dhënave duke përmirësuar cilësinë dhe estetikën e krijimit të grafikëve.
+library(dplyr) #paketë që shërben në manipulimin e të dhënave duke na dhënë mundësinë të shtojmë variabla të reja që janë funskione të ndryshoreve ekzistuese.
+library(tibble) #shërben për të përmbledhur dhe krijuar një kornizë praktike të të dhënave.
+library(gapminder) #shërben për të mësuar mbi vizualizimin e të dhënave në R.
+library(datasets)
+
+getwd()
+
+```
+
+```{r pressure, echo=TRUE}
+library(readxl)
+DataSets <- read_excel("C:/Users/2SC-COMPUTeR/Desktop/DataSets.xlsx")
+View(DataSets)
+
+```
+
+## ~[*Në funksionin më poshtë kemi gjetur mesataren e cmimit të makinave.  Shikojmë që cmimet variojnë afërsisht rreth 54450.*]{.underline}~
+
+```{r echo=TRUE}
+
+
+mean(DataSets$price)
+
+
+```
+
+## ~[*Më poshtë kemi gjetur numrin e makinave me cmim më të vogël se   2500. Vetëm 39 makina kanë cmim më të vogël se 2500.*]{.underline}~
+
+```{r echo=TRUE}
+
+length(which(DataSets$price<2500))
+
+
+```
+
+## ~[*Më poshtë kemi gjetur se cilat janë 39 vlerat e makinave që kanë    cmimin më të vogël se 2500.*]{.underline}~
+
+```{r echo=TRUE}
+
+DataSets$price[which(DataSets$price<2500)]
+
+
+```
+
+## ~[*Boxplot i cmimeve të makinave. Sipas boxplotit mund të tregojmë që   shumica e makinave kanë cmim më të lartë se 2500.*]{.underline}~
+
+```{r echo=TRUE}
+
+boxplot(DataSets$price,col="DARK GReeN")
+
+
+```
+
+## ~[*Barplot i viteve të regjistrimit të makinave. Shikojmë që gjatë vitit  2005 kemi numrin më të lartë të regjistrimit të makinave.*]{.underline}~
+
+```{r echo=TRUE}
+barplot(xtabs(~yearofregistration,DataSets),col="pink")
+
+```
+
+## ~[*Nj**ë** histogram i kilometrave t**ë** b**ë**ra te makinat. Nga histogrami më   posht**ë** mund t**ë** shikojm**ë** q**ë** rreth 60 makina kan**ë** b**ërë** rreth 150000  kilometra.*]{.underline}~
+
+```{r echo=TRUE}
+
+gghistogram(DataSets,x="kilometer",bins=10)
+
+```
+
+## ~[*Cmimi m**ë** i lartë i makinave. Nga kodi mëposhtë shikojmë që cmimi më i lartë i makinave të datasetit që kemi marrë në shqyrtim është 31999.*]{.underline}~
+
+```{r echo=TRUE}
+
+max(DataSets$price)
+
+```
+
+## ~[*Më lart pamë që cmimi më i lartë i makinave ishte 31999, duke u   bazuar te ky cmim mund të gjejmë llojin e gearbox-it që ka kjo makinë. Kjo makinë ka gearbox automatik.*]{.underline}~
+
+```{r echo=TRUE}
+
+A=DataSets %>% filter(price == max(price))
+A$gearbox
+
+
+```
+
+## ~[*Tani mund të gjejmë numrin minimal të kilometrave të bëra nga   makinat në datasetin e dhënë.Numri më i ulët i kilometrave të bëra nga  makinat që kemi marr në vëzhgim është 5000.*]{.underline}~
+
+```{r echo=TRUE}
+
+min(DataSets$kilometer)
+
+
+```
+
+## ~[*Duke u mbështetur në pyetjen më lartë për kilometrat më të ulët tashmë shikojmë që makina që i ka kilometrat më të ulët është e tipit coupe.*]{.underline}~
+
+```{r echo=TRUE}
+
+A=DataSets %>% filter(kilometer == min(kilometer))
+A$vehicletype
+
+
+
+```
+
+## ~[*Kemi vlerat e 20 cmimeve më të ulta të makinave që ne kemi në   dataset.*]{.underline}~
+
+```{r echo=TRUE}
+
+DataSets %>% slice_min(order_by = price, n = 20) %>% pull(price)
+
+
+```
+
+## ~[*Një përmbledhje e shkurtër sipas llojit të makinave dhe cmimit të tyre.*]{.underline}~
+
+```{r echo=TRUE}
+
+DataSets %>% group_by(vehicletype) %>% summarize(AVG_mean=mean(price,na.rm=TRUE))
+
+
+```
+
+## ~[*GG plot me pika i të dhënave sipas llojit të makinave , gearbox dhe  cmimit. Duke parë GG plot-in mëposhtë shikojmë që autobusat automatik kanë cmimet më të larta ndërsa llojet e makinave si kombi dhe kleinwagen kanë cmimet më të  ulta si ato automike dhe manuale.*]{.underline}~
+
+```{r echo=TRUE}
+
+ggplot(data = DataSets, mapping = aes(x = gearbox, y = vehicletype, color=price)) +
+  geom_point()
+
+
+```
+
+## ~[*Numri dhe llojet e makinave sipas gearboxit.Shikojmë që numrin më të  lartë të makinave e kanë makina kombi automatik dhe gjithashtu bus  manual. Ndërsa numrin më të vogël të makinave e ka makina e llojit  coupe automatik dhe suv automatik.*]{.underline}~
+
+```{r echo=TRUE}
+
+DataSets %>% group_by(gearbox, vehicletype) %>% count()
+
+```
+
+## ~[*Më poshtë kemi renditur makinat e datasetit sipas variablit të vitit të  regjistrimit dhe kemi marrë 20 elemetët e parë të tabelës.*]{.underline}~
+
+```{r echo=TRUE}
+
+DataSets  %>% arrange(desc(yearofregistration)) %>% head(20)
+```
+
+## ~[*Renditja e datasetit sipas variablit kilometer në rendin rritës dhe 15  elementët e fundit të tabelës.*]{.underline}~
+
+```{r echo=TRUE}
+DataSets %>% arrange(kilometer) %>%  tail(15)
+```
+
+## ~[*Vlerat e 25 makinave me powerps më të vogël ku powersps më i vogël sipas output-it është 0 dhe 4 makina e kanë vlerën e powersps 0.*]{.underline}~
+
+```{r echo=TRUE}
+DataSets %>% slice_min(order_by = powerps, n = 25) %>%  pull(powerps)
+```
+
+## ~[*Mesatarja e makinave në intervalin e vitit të regjistrimit [1990, 2010].*]{.underline}~
+
+```{r echo=TRUE}
+mean(DataSets$yearofregistration> 1990 &DataSets$yearofregistration<= 2010, na.rm = T)
+```
+
+## ~[*Numri i makinave që janë regjistruar nga muaji i 3 në të 10. Duke  analizuar përgjigjen kemi 59 makina që janë regjistruar gjatë 7 muajve, nga muaji i 3 në atë të 10.*]{.underline}~
+
+```{r echo=TRUE}
+sum(DataSets$monthofregistration>3 & DataSets$monthofregistration<=10,na.rm=TRUE)
+
+```
+
+## ~[*Histograma e muajve të regjistrimit të makinave. Gjatë muajve të 2 dhe të 4 dhe gjithashtu të 6-8 kemi numrin më të lartë të regjistrimit.*]{.underline}~
+
+```{r echo=TRUE}
+hist(DataSets$monthofregistration,col="purple", main="Histograma e variablit month of registration")
+
+```
+
+## ~[*Scatter plot i mujave të regjistrimit në lidhje me kilometrat.*]{.underline}~
+
+```{r echo=TRUE}
+plot(DataSets$monthofregistration~DataSets$kilometer,xlab="kilometer",ylab="monthofregistration",main="Month of Registrstion vs Kilometer",pch=16,col="orange")
+```
+
+## ~[*Cmimi i makinave sipas modelit. Makina Vectra ka cmimin më të lartë.*]{.underline}~
+
+```{r echo=TRUE}
+DataSets %>% group_by(model) %>% summarize(Sum_price=sum(price))
+```
+
+## ~[*Mesatarja e cmimeve sipas llojit të makinës.*]{.underline}~
+
+```{r echo=TRUE}
+DataSets %>% group_by(vehicletype) %>% summarize(AVG_mean=mean(price,na.rm=TRUE))
+```
+
+## ~[*Devijimi standard i kilometrave.*]{.underline}~
+
+```{r echo=TRUE}
+sd(DataSets$kilometer)
+```
+
+## ~[*Dispersioni i cmimit të makinave në datasetin e vëzhguar.*]{.underline}~
+
+```{r echo=TRUE}
+var(DataSets$price)
+```
+
+## ~[*Grafik me pika i cmimit kundrejt kilometrave të bëra. Makinat që kanë më pak kilometra kanë cmimet më të larta.*]{.underline}~
+
+```{r echo=TRUE}
+plot(price~kilometer,DataSets,col="green",main="Grafiku me pika",xlab="Kilometer",ylab="Price")
+
+```
+
+## ~[*Numri i brandit të makinave sipas cmimit që kanë.*]{.underline}~
+
+```{r echo=TRUE}
+A=xtabs(~brand+price,DataSets)
+A
+```
+
+## ~[*Cfarë lloj fuel type përdor makina me cmimin më të ulët? Makina me cmimin më të ulët përdor benzinën si fueltype.*]{.underline}~
+
+```{r echo=TRUE}
+A=DataSets %>% filter(price == min(price))
+A$fueltype
+```
+
+## ~[*Mesatarja e kilometrave të makinave sipas llojit të fueltype që përdorin. Makinat që përdorin fueltype të lpg kanë bërë më shumë kilometra.*]{.underline}~
+
+```{r echo=TRUE}
+DataSets %>% group_by(fueltype) %>% summarize(AVG_mean=mean(kilometer,na.rm=TRUE))
+```
+
+## ~[*Një grafik me pika I kilometrave me cmimin sipas fuel type. Shikojmë që makinat që përdorin diesel si fueltype të tyre kanë bërë më shumë  kilometra gjithashtu priren të kenë dhe cmime të larta.*]{.underline}~
+
+```{r echo=TRUE}
+
+ggplot(data = DataSets) + 
+  geom_point(mapping = aes(x = price, y = kilometer, color = fueltype))
+```
+
+## ~[*Box plot I cmimit kundrejt brandit të makinave.*]{.underline}~
+
+```{r echo=TRUE}
+ggplot(data = DataSets, mapping = aes(x = brand, y = price)) + 
+  geom_boxplot()
+ggplot(data = DataSets, mapping = aes(x = brand, y = price)) + 
+  geom_boxplot() +
+  coord_flip()
+
+```
+
+## ~[***Më poshtë kemi gjetur mesataren e kilometrave të bëra nga makinat.***]{.underline}~
+
+```{r echo=TRUE}
+
+
+mean(DataSets$kilometer)
+
+
+```
+
+## ~[*GGplot i kilometrave të bëra nga llojet e ndryshme të makinave me fueltype që ata përdorin. Shikojmë që llojet e makinave që përdorin dieselin kanë një numër më të lartë të kilometrave se ato makina që përdorin benzinën.*]{.underline}~
+
+```{r echo=TRUE}
+
+
+
+ggplot(data = DataSets, mapping = aes(x = fueltype, y = vehicletype, color=kilometer)) +
+  geom_point()
+
+
+```
+
+## ~[*Më poshtë kemi një scatter plot për cmimet e makinave në lidhje me vitin e regjistrimit të tyre. Bazuar në scatter plot-in më poshtë mund të dallojmë që makinat që janë regjistruar në vitet 90 kanë një cmim më të ulët se makinat që janë regjistruar në vitet 2000.*]{.underline}~
+
+```{r echo=TRUE}
+plot(DataSets$yearofregistration~DataSets$price,xlab="kilometer",ylab="yearofregistration",main="Year of Registration vs Price",pch=16,col="purple")
+
+
+```
+
+## ~[*BoxPlot i powerps të makinave . Nga ky boxplot arrijmë në përfundimin se me një diferencë shumë të vogël ka më shumë makina me powerps më të madh se 100.*]{.underline}~
+
+```{r echo=TRUE}
+
+boxplot(DataSets$powerps,col="DARK RED")
+```
+
+## ~[*Më poshtë kemi gjetur një geom line të cmimit të makinave ndër vite sipas gearbox-it të tyre dhe shikojmë që cmimi i makinave që kanë gearbox automatik është rritur në vitet e fundit ndërsa ajo manuale ka pasur ndryshime të vogla ulje ngritje ndër vite përvec viteve 60 dhe 80 që ka pasur një rënie të dukshme.*]{.underline}~
+
+```{r echo=TRUE}
+ggplot(data = DataSets, mapping = aes(x=price, y=yearofregistration, by=gearbox, color=gearbox)) +
+
+  geom_line()
+
+```
+
+## ~[*Në ggplot-in më poshtë është treguar lidhja midis cmimit  dhe kilometrave në varësi të gearbox-it që përdorin makinat.*]{.underline}~
+
+```{r echo=TRUE}
+ggplot(data = DataSets, mapping = aes(x=price, y=kilometer, by=brand, color=gearbox)) +
+  geom_line() + geom_point()
+```
+
+## ~[*Numri i makinave që kanë bërë më pak se 50.000 kilometra. Shikojmë që vetëm 4 makina kanë bërë më pak se 50.000 kilometra.*]{.underline}~
+
+```{r echo=TRUE}
+
+length(which(DataSets$kilometer<50000))
+```
+
+## ~[*Meqë më lart gjetëm që vetëm 4 makina kanë bërë më pak se 50.000 kilometra më poshtë kemi gjetur vlerat e kilometrave të këtyre 4 makinave.*]{.underline}~
+
+```{r echo=TRUE}
+
+DataSets$price[which(DataSets$kilometer<50000)]
+```
+
+## ~[*Numri i makinave që kanë një cmim nga 1000 deri në 2500. Nga këtu tregojmë që vetëm 23 makina janë ndërmjet këtij intervali cmimi.*]{.underline}~
+
+```{r echo=TRUE}
+
+sum(DataSets$price>1000 & DataSets$price<=2500,na.rm=TRUE)
+
+```
+
+## ~[*Mesatarja e cmimit të makinave sipas modelit që ato kanë. Në bazë të outputit më poshtë tregojmë që modeli i makinës sharan ka mesatare të cmimit më të lartë ndërsa modeli që ka mesataren e cmimit më të ulët është modeli corsa.*]{.underline}~
+
+```{r echo=TRUE}
+
+DataSets %>% group_by(model) %>% summarize(AVG_mean=mean(price,na.rm=TRUE))
+```
+
+## ~[*BoxPlot i cmimeve të makinave në lidhje me fueltype që ato përdorin në varësi të gearbox-it që kanë. Shikojmë që diesel automatik priret të këtë cmime më të larta. Mund të tregojmë që makinat me benzinë manuale kanë cmime më të ulta.*]{.underline}~
+
+```{r echo=TRUE}
+
+ggplot(DataSets, aes(x = fueltype, y = price, fill = gearbox)) +    
+  geom_boxplot()
+```
+
+\
